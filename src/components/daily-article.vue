@@ -3,12 +3,31 @@
     <div class="daily-article-title">{{data.title}}</div>
     <div class="daily-article-content"
          v-html="data.body"></div>
+    <div class="daily-comments"
+         v-show="comments.length">
+      <span>评论（{{comments.length}}）</span>
+      <div class="daily-comment"
+           v-for="(comment,index) in comments"
+           :key="index">
+        <div class="daily-comment-avatar">
+          <img :src="comment.avatar">
+        </div>
+        <div class="daily-comment-content">
+          <div class="daily-comment-name">{{comment.author}}</div>
+          <div class="daily-comment-time"
+               v-time="comment.time"></div>
+          <div class="daily-comment-text">{{comment.content}}</div>
+        </div>
+      </div>
+    </div>
   </div>
 </template>
 
 <script>
 import $ from '../libs/util'
+import Time from '../directives/time'
 export default {
+  directives: { Time },
   props: {
     id: {
       type: Number,
@@ -17,7 +36,8 @@ export default {
   },
   data() {
     return {
-      data: {}
+      data: {},
+      comments: []
     }
   },
   methods: {
@@ -29,6 +49,17 @@ export default {
         this.data = res
         //返回文章顶端
         window.scrollTo(0, 0)
+        //获取评论
+        this.getComments()
+      })
+    },
+    getComments() {
+      this.comments = []
+      $.ajax.get('story/' + this.id + '/short-comments').then(res => {
+        this.comments = res.comments.map(comment => {
+          comment.avatar = $.imgPath + comment.avatar
+          return comment
+        })
       })
     }
   },
