@@ -26,22 +26,25 @@
             <div class="daily-date">{{formatDay(list.date)}}</div>
             <Item v-for="item in list.stories"
                   :data="item"
-                  :key="item.id"></Item>
+                  :key="item.id"
+                  @click.native.prevent="handleClick(item.id)"></Item>
           </div>
         </template>
         <template v-if="type==='daily'">
           <Item v-for="item in list"
                 :data="item"
-                :key="item.id"></Item>
+                :key="item.id"
+                @click.native.prevent="handleClick(item.id)"></Item>
         </template>
       </div>
-
+      <daily-article :id="articleId"></daily-article>
     </div>
   </div>
 </template>
 
 <script>
 import Item from './components/item.vue'
+import dailyArticle from './components/daily-article.vue'
 import $ from './libs/util.js'
 import axios from 'axios'
 
@@ -56,10 +59,11 @@ export default {
       isLoading: false,
       dailyTime: $.getTodayTime(),
       recommendList: [],
-      list: []
+      list: [],
+      articleId: 0
     }
   },
-  components: { Item },
+  components: { Item, dailyArticle },
   methods: {
     //请求主题
     getThemes() {
@@ -114,6 +118,9 @@ export default {
         this.dailyTime -= 86400000
         this.getRecommendList()
       }
+    },
+    handleClick(id) {
+      this.articleId = id
     }
   },
   mounted() {
