@@ -17,7 +17,9 @@
           </li>
         </ul>
       </div>
-      <div class="daily-list">
+      <div class="daily-list"
+           ref="list"
+           @scroll="handleScroll">
         <template v-if="type==='recommend'">
           <div v-for="(list,index) in recommendList"
                :key="index">
@@ -100,6 +102,18 @@ export default {
       if (month.substr(0, 1) === '0') month = month.substr(1, 1);
       if (day.substr(0, 1) === '0') day = day.substr(1, 1);
       return `${month} 月 ${day} 日`;
+    },
+    handleScroll() {
+      //获取DOM
+      const $list = this.$refs.list
+      //在‘主题日报’或者在加载推荐列表时停止操作
+      if (this.type === 'daily' || this.isLoading) return
+      //滚动距离+页面高度=内容区域，则接触底部
+      if ($list.scrollTop + document.body.clientHeight >= $list.scrollHeight) {
+        //时间减少一天
+        this.dailyTime -= 86400000
+        this.getRecommendList()
+      }
     }
   },
   mounted() {
