@@ -23,7 +23,7 @@
         <template v-if="type==='recommend'">
           <div v-for="(list,index) in recommendList"
                :key="index">
-            <div class="daily-date">{{formatDay(list.date)}}</div>
+            <div class="daily-date">{{list.date}}</div>
             <Item v-for="item in list.stories"
                   :data="item"
                   :key="item.id"
@@ -47,6 +47,7 @@ import Item from './components/item.vue'
 import dailyArticle from './components/daily-article.vue'
 import $ from './libs/util.js'
 import axios from 'axios'
+import moment from 'moment'
 
 export default {
   name: 'app',
@@ -57,7 +58,7 @@ export default {
       type: 'recommend',
       themeId: 0,
       isLoading: false,
-      dailyTime: $.getTodayTime(),
+      dailyTime: moment().unix(),
       recommendList: [],
       list: [],
       articleId: 0
@@ -87,25 +88,18 @@ export default {
     handleToRecommend() {
       this.type = 'recommend'
       this.recommendList = []
-      this.dailyTime = $.getTodayTime()
+      this.dailyTime = moment().unix()
       this.getRecommendList()
     },
     getRecommendList() {
       //获取每日推荐数据
       this.isLoading = true
-      const prevDay = $.prevDay(this.dailyTime + 86400000)
+      const prevDay = moment.unix(this.dailyTime).add(1, 'days').format('YYYYMMDD')
       $.ajax.get('news/before/' + prevDay).then(res => {
+        res.date = res.date.replace(/(\d{4})(\d{2})(\d{2})/g, '$1年$2月$3日')
         this.recommendList.push(res)
         this.isLoading = false
       })
-    },
-    formatDay(date) {
-      //转换为带汉字的月日
-      let month = date.substr(4, 2);
-      let day = date.substr(6, 2);
-      if (month.substr(0, 1) === '0') month = month.substr(1, 1);
-      if (day.substr(0, 1) === '0') day = day.substr(1, 1);
-      return `${month} 月 ${day} 日`;
     },
     handleScroll() {
       //获取DOM
@@ -115,7 +109,7 @@ export default {
       //滚动距离+页面高度=内容区域，则接触底部
       if ($list.scrollTop + document.body.clientHeight >= $list.scrollHeight) {
         //时间减少一天
-        this.dailyTime -= 86400000
+        this.dailyTime = moment.unix(this.dailyTime).subtract(1, 'days').unix()
         this.getRecommendList()
       }
     },
